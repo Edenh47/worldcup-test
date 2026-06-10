@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>世界杯足坛娱乐人格测试</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        .cyber-toast { animation: fadeInOut 1.8s ease-in-out forwards; }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, 20px); }
+            15% { opacity: 1; transform: translate(-50%, 0); }
+            85% { opacity: 1; transform: translate(-50%, 0); }
+            100% { opacity: 0; transform: translate(-50%, -20px); }
+        }
+        .progress-bar { transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    </style>
+</head>
+<body class="py-4 px-4 select-none min-h-screen" style="background: linear-gradient(135deg, #FFF0F3 0%, #FFF5ED 100%);">
+
+    <div id="main-container" class="w-full max-w-md mx-auto relative min-h-[80vh]"></div>
+    <div id="toast-wrapper" class="pointer-events-none fixed inset-x-0 bottom-20 z-[9999]"></div>
+
+<script>
+// ==========================================
+// 1. 全局配置与历史记录
+// ==========================================
+window.currentQuestionIndex = 0;
+window.userAnswers = []; 
+
+window.currentResultCache = { personalityKey: null, price: 0, beatPercent: "0.0%", madIndex: 0 };
+window.hasUsedShareSecondChance = false;
+
+const URL_IOS = "https://apps.apple.com/ca/app/%E5%8A%A0%E6%8B%BF%E5%A4%A7%E7%9C%81%E9%92%B1%E5%BF%A6%E6%8A%A6-dealmoon-ca-%E6%8A%98%E6%89%A3%E4%BF%A1%E6%81%AF%E5%A4%A7%E5%90%88%E9%9B%86/id867845107";
+const URL_ANDROID = "https://play.google.com/store/apps/details?id=ca.com.dealmoon.android&hl=zh";
+const URL_DESKTOP = "https://www.dealmoon.ca/?s=twitter_ad_deal_476558_20260609&utm_source=twitter&utm_medium=social&utm_campaign=twitter_ad_deal_476558_20260609&x_from_site=ca";
+const ACTIVITY_SHARE_URL = "https://apps.apple.com/ca/app/%E5%8A%A0%E6%8B%BF%E5%A4%A7%E7%9C%81%E9%92%B1%E5%BF%AB%E6%8A%A6-dealmoon-ca/id867845107";
+
+const cardImages = {
+  DEALMOON: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/dealmoon.png", MES: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/mes.png", CR7: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/cr7.png",
+  CNA: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/cna.png", HAAL: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/haal.png", NEMA: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/nema.png",
+  MBAP: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/mbap.png", BECK: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/beck.png", ZLAT: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/zlat.png",
+  KROO: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/kroo.png", RAMO: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/ramo.png", SUAR: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/suar.png",
+  NEUE: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/neue.png", MULL: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/mull.png", KANT: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/kant.png",
+  MART: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/mart.png", BENZ: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/benz.png", TEVE: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/teve.png",
+  BALO: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/balo.png", HAZA: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/haza.png",
+  LOGO: "https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/dealmoon_logo.png"
+};
+
+const questionsDatabase = [
+  { id: 1, text: "在多伦多CN Tower高级餐厅吃饭，邻桌印度大哥一直开免提大声打电话，你会？", options: [
+    { text: "忍了，心里默念 Peace & Love。", score: { FISH: 2 } },
+    { text: "叫 Server 过来，优雅地让对方解决。", score: { RESPONSIBLE: 2 } },
+    { text: "拍视频发小红书，标题《家人们谁懂啊》。", score: { SOCIAL: 2 } },
+    { text: "直接走过去正面硬刚：“Excuse me?!”", score: { EGO: 2 } }
+  ]},
+  { id: 2, text: "冬天大雪封门，你发现车被雪埋了，铲雪车还把路口堵死了，你会？", options: [
+    { text: "秒发邮件给老板请假：Snow day！", score: { FISH: 2 } },
+    { text: "默默掏出铲子，提前一小时硬着头皮铲。", score: { RESPONSIBLE: 2 } },
+    { text: "猛踩油门硬冲，能开出去就行 ！", score: { AMBITION: 2 } },
+    { text: "在群里吼一声，重金雇邻居小孩来铲。", score: { EGO: 2 } }
+  ]},
+  { id: 3, text: "去 Costco 结账，后面的人一直用购物车顶你屁股且毫无歉意，你会？", options: [
+    { text: "惹不起躲得起，默默往前挪一步。", score: { FISH: 2 } },
+    { text: "他顶一下，你就回头赏他一个死亡凝视。", score: { RESPONSIBLE: 1, CHAOS: 1 } },
+    { text: "把车横过来质问：“Do you have a problem?!”", score: { EGO: 2 } },
+    { text: "故意放慢动作，极限拉扯，急死他。", score: { CHAOS: 2 } }
+  ]},
+  { id: 4, text: "在多伦多租房，遇到奇葩房东无理扣押金（Deposit）还拒绝修家电，你会？", options: [
+    { text: "自认倒霉，多一事不如少一事。", score: { FISH: 2 } },
+    { text: "严格收集证据，直接反手一个 LTB 仲裁。", score: { RESPONSIBLE: 2 } },
+    { text: "搬走前把断电的冰箱塞满死鱼，震撼房东。", score: { CHAOS: 2 } },
+    { text: "小红书全网曝光带节奏，顺便给自己涨一波粉。", score: { SOCIAL: 2 } }
+  ]},
+  { id: 5, text: "周末去大统华抢到最后一盒打折和牛，排队时被一个大妈直接从车里顺走了，你会？", options: [
+    { text: "算了，默默去换了盒鸡胸肉。", score: { FISH: 2 } },
+    { text: "保持理智，立刻找店员调监控。", score: { RESPONSIBLE: 2 } },
+    { text: "一把夺回来：“Excuse me, it's mine!”", score: { EGO: 2 } },
+    { text: "尾随她，趁她不注意把她车里更贵的顺走。", score: { CHAOS: 2 } }
+  ]},
+  { id: 6, text: "面试一家规模挺大的华人公司，HR 终面要求你提供父母的职业详情，你会？", options: [
+    { text: "华人圈很正常，为了 Offer 如实填。", score: { RESPONSIBLE: 1 } },
+    { text: "极度介意，但为了工作瞎编两个高大上的。", score: { AMBITION: 1, CHAOS: 1 } },
+    { text: "拒绝：“这属于个人隐私，不合ESA劳工法。”", score: { EGO: 2 } },
+    { text: "巨大红旗（Red Flag）！反手在Glassdoor爆料。", score: { SOCIAL: 2, RESPONSIBLE: 1 } }
+  ]},
+  { id: 7, text: "临近下班（4:55 PM），经理突然在 Slack 上发来一个无脑紧急需求要求今晚搞定，你会？", options: [
+    { text: "假装没看见，5:00 准时关机，明天再说。", score: { FISH: 2 } },
+    { text: "委婉拒绝：“今天排期满了，明天一早处理。”", score: { RESPONSIBLE: 2 } },
+    { text: "开启狂卷模式，连夜做完，必须刷满存在感。", score: { AMBITION: 2 } },
+    { text: "截图发到内讧小群，和同事一起阴阳怪气。", score: { CHAOS: 2, SOCIAL: 1 } }
+  ]},
+  { id: 8, text: "公司季度全员大会（All-Hands）上领导在画饼，你通常在干嘛？", options: [
+    { text: "开摄像头疯狂点头，Q&A环节抢麦刷脸。", score: { AMBITION: 2, SOCIAL: 1 } },
+    { text: "关麦关摄像头，疯狂刷手机摸鱼。", score: { FISH: 2 } },
+    { text: "盯着屏幕，算算自己什么时候能提早退休。", score: { RESPONSIBLE: 2 } },
+    { text: "后台和同事狂发表情包，吐槽领导的英语。", score: { CHAOS: 2 } }
+  ]},
+  { id: 9, text: "隔壁组白人老哥把你在项目里的成果直接当成他的功劳汇报了，你会？", options: [
+    { text: "算了，职场常态，下次注意保护自己。", score: { FISH: 2 } },
+    { text: "下次和 Manager 会议中单独暗示他，借主管之手解决。", score: { AMBITION: 1, RESPONSIBLE: 1 } },
+    { text: "写小作文发大老板和HR，控诉对方不诚信。", score: { AMBITION: 2 } },
+    { text: "表面迎合，在系统里埋个雷等他下次自己踩爆。", score: { CHAOS: 2 } }
+  ]},
+  { id: 10, text: "Group Project 遇到不干活还失踪的猪队友，眼看 Deadline 到了，你会？", options: [
+    { text: "认命，含泪一个人把所有活全干了。", score: { RESPONSIBLE: 2 } },
+    { text: "自己做完，但在最终 Peer Review 里给他打0分。", score: { EGO: 1, RESPONSIBLE: 1 } },
+    { text: "大家一起摆摆烂，提交半成品，要死一起死。", score: { CHAOS: 2 } },
+    { text: "发动超强社交圈，到处借数据和框架拼凑出来。", score: { SOCIAL: 2 } }
+  ]},
+  { id: 11, text: "Final 期间在学校图书馆熬夜赶 Due，你的续命神器通常是？", options: [
+    { text: "大杯冰美式加红牛，化身无情的刷题卷王。", score: { AMBITION: 2, RESPONSIBLE: 1 } },
+    { text: "一边写一边和旁边的学术搭子互相鼓励吐槽。", score: { SOCIAL: 2 } },
+    { text: "各种高热量零食摆满桌，开启零压摸鱼写图。", score: { FISH: 2 } },
+    { text: "我从来不需要赶 Due，所有 Task 早在 Final 前就被我提前规划完成了。", score: { RESPONSIBLE: 2 } }
+  ]},
+  { id: 12, text: "面对加拿大目前的“地狱级”就业市场，毕业后你的第一自救策略是？", options: [
+    { text: "疯狂海投！一天狂投100份，大力出奇迹。", score: { RESPONSIBLE: 2 } },
+    { text: "狂约 LinkedIn 上的 Manager 喝咖啡（Coffee Chat）要内推。", score: { AMBITION: 2, SOCIAL: 1 } },
+    { text: "润不动了，考虑回国或读二硕/买 LMIA 续命。", score: { CHAOS: 2 } },
+    { text: "先不急，毕业先痛痛快快回国玩两个月再说。", score: { FISH: 2 } }
+  ]},
+  { id: 13, text: "在留学赶 Due 压力大到崩溃的深夜，你唯一的精神支柱通常是？", options: [
+    { text: "刷 Dealmoon 看编辑推荐的好价，疯狂下单买买买来弥补自己。", score: { FISH: 2 } },
+    { text: "想想以后能拿到 PR（枫叶卡）的场景，咬牙坚持。", score: { AMBITION: 2 } },
+    { text: "找闺蜜/基友连麦疯狂吐槽，聊到凌晨。", score: { SOCIAL: 2 } },
+    { text: "彻底疯狂，在朋友圈发只有自己懂的意识流发疯文学。", score: { CHAOS: 2 } }
+  ]},
+  { id: 14, text: "在 Dealmoon 刷到了 Stanley 大号吸管杯Bug价只要 $5一个！但你家里已经有三个了，你会？", options: [
+    { text: "Bug价不买就是亏！直接全款秒下20个！", score: { EGO: 2 } }, 
+    { text: "立刻转发到姐妹/代购群：“家人们BUG价速冲！”", score: { SOCIAL: 2 } },
+    { text: "虽然便宜但家里有了，默默划走，绝不冲动。", score: { RESPONSIBLE: 2 } },
+    { text: "随手转发给需要的姐妹，自己心如止水继续躺。", score: { FISH: 1 } }
+  ]},
+  { id: 15, text: "在 Dealmoon 刷到了本地新开超难订的高端网红餐厅“双人独家尊享半价套餐”，你会？", options: [
+    { text: "终于不用排队还打折！光速抢券，今晚就去。", score: { SOCIAL: 2 } }, 
+    { text: "抢！还要发到朋友圈给大家安利好划算。", score: { EGO: 2 } },        
+    { text: "严格对比平时单点价格，精准精算后再下手。", score: { AMBITION: 2, RESPONSIBLE: 1 } },
+    { text: "抢券？太麻烦了。我自己在家煮个辛拉面更香。", score: { FISH: 2 } }
+  ]},
+  { id: 16, text: "在Dealmoon 买到了超级难抢的世界杯门票，你会？", options: [
+    { text: "提前三个月搭配 OOTD。", score: { EGO: 2 } },
+    { text: "从开场录到散场，发朋友圈，发小红书。", score: { SOCIAL: 2 } },
+    { text: "纯粹去看球享受，连手机都不掏。", score: { FISH: 2 } },
+    { text: "现场撕心裂肺狂欢。", score: { CHAOS: 2 } }
+  ]},
+  { id: 17, text: "突然收到一笔来自 CRA（税务局）高达 $3,000 加币的意外退税，你会？", options: [
+    { text: "光速拿下长草已久的大牌包包。", score: { EGO: 2 } },
+    { text: "存进 TFSA/FHSA/RRSP。", score: { RESPONSIBLE: 2 } },
+    { text: "拿出一半去Casino 赌一把。", score: { CHAOS: 2, EGO: 1 } },
+    { text: "留在账户等以后扣房租。", score: { RESPONSIBLE: 2 } }
+  ]},
+  { id: 18, text: "朋友组了一个“有很多本地高质量单身帅哥美女”的剧本杀聚会，你会？", options: [
+    { text: "精心打扮，带着极强的社交目的去扩充高质量人脉圈。", score: { AMBITION: 2, SOCIAL: 1 } },
+    { text: "气场全开，展现超强逻辑，把全场智商按在地上摩擦。", score: { EGO: 2 } },
+    { text: "安静坐在角落，只跟认识的熟人有一搭没一搭聊天。", score: { RESPONSIBLE: 1 } },
+    { text: "毫无包袱，全程当搞笑担当，把高端局带成发疯局。", score: { CHAOS: 2 } }
+  ]},
+  { id: 19, text: "身边的朋友陆续“回流”国内了，刷着他们丰富多彩的国内深夜烧烤和蹦迪朋友圈，你心里会想：", options: [
+    { text: "太羡慕了！自己像在北美坐牢，明天就买回国机票。", score: { EGO: 2 } },
+    { text: "铁打的北美流水的兵，成年人的世界都是过客。", score: { FISH: 2 } },
+    { text: "虽有一丝搞基建的乡愁，还是坚定在加/美搬砖。", score: { RESPONSIBLE: 2 } },
+    { text: "旧的不去新的不来！约上刚认识的朋友今晚去嗨。", score: { SOCIAL: 2, AMBITION: 1 } }
+  ]},
+  { id: 20, text: "假如你无条件可以拥有一个超能力，你最希望是？", options: [
+    { text: "读心术：一眼看穿老板/教授心思，玩转北美。", score: { AMBITION: 2, SOCIAL: 1 } },
+    { text: "锦鲤体质：买彩票必中，完美避开所有求职寒冬。", score: { FISH: 2 } },
+    { text: "瞬间移动：再也不用在零下三十度等该死的TTC。", score: { RESPONSIBLE: 2 } },
+    { text: "钢铁之躯：化身不睡觉的永动机，疯狂熬夜卷绩点。", score: { AMBITION: 2 } }
+  ]}
+];
+
+const rankTiers = {
+  DEALMOON: { base: 1000000000, minP: 99.8, maxP: 99.9 }, MES: { base: 350000000, minP: 99.1, maxP: 99.7 }, CR7: { base: 300000000, minP: 98.5, maxP: 99.0 }, CNA: { base: 250000, minP: 0.1, maxP: 1.5 },
+  HAAL: { base: 180000000, minP: 95.0, maxP: 98.4 }, MBAP: { base: 180000000, minP: 95.0, maxP: 98.4 }, ZLAT: { base: 120000000, minP: 88.0, maxP: 94.9 }, KROO: { base: 90000000, minP: 75.0, maxP: 87.9 },
+  RAMO: { base: 85000000, minP: 70.0, maxP: 74.9 }, NEUE: { base: 80000000, minP: 65.0, maxP: 69.9 }, MART: { base: 75000000, minP: 60.0, maxP: 64.9 }, SUAR: { base: 70000000, minP: 55.0, maxP: 59.9 },
+  BENZ: { base: 65000000, minP: 50.0, maxP: 54.9 }, NEMA: { base: 60000000, minP: 45.0, maxP: 49.9 }, BECK: { base: 55000000, minP: 40.0, maxP: 44.9 }, MULL: { base: 50000000, minP: 35.0, maxP: 39.9 },
+  TEVE: { base: 45000000, minP: 28.0, maxP: 34.9 }, KANT: { base: 40000000, minP: 20.0, maxP: 27.9 }, BALO: { base: 20000000, minP: 10.0, maxP: 19.9 }, HAZA: { base: 15000000, minP: 5.0, maxP: 9.9 }
+};
+
+const CAMP_MAPPING = {
+  juan: ["KROO", "NEUE", "HAAL", "KANT"],
+  social: ["MBAP", "RAMO", "BECK", "MULL"],
+  fish: ["HAZA", "NEMA", "TEVE", "BENZ"],
+  chaos: ["ZLAT", "BALO", "SUAR", "MART"]
+};
+
+const profile6DMatrix = {
+  KROO: { AMBITION: 2, RESPONSIBLE: 10, SOCIAL: 2, FISH: 4, CHAOS: 1, EGO: 9 },
+  NEUE: { AMBITION: 6, RESPONSIBLE: 8, SOCIAL: 5, FISH: 2, CHAOS: 7, EGO: 7 },
+  HAAL: { AMBITION: 4, RESPONSIBLE: 10, SOCIAL: 1, FISH: 2, CHAOS: 1, EGO: 6 },
+  KANT: { AMBITION: 1, RESPONSIBLE: 10, SOCIAL: 1, FISH: 1, CHAOS: 1, EGO: 1 },
+  MBAP: { AMBITION: 10, RESPONSIBLE: 4, SOCIAL: 8, FISH: 1, CHAOS: 4, EGO: 10 },
+  RAMO: { AMBITION: 8, RESPONSIBLE: 9, SOCIAL: 8, FISH: 1, CHAOS: 6, EGO: 8 },
+  BECK: { AMBITION: 4, RESPONSIBLE: 5, SOCIAL: 10, FISH: 3, CHAOS: 1, EGO: 8 },
+  MULL: { AMBITION: 4, RESPONSIBLE: 8, SOCIAL: 10, FISH: 3, CHAOS: 5, EGO: 2 },
+  HAZA: { AMBITION: 1, RESPONSIBLE: 1, SOCIAL: 3, FISH: 10, CHAOS: 2, EGO: 3 },
+  NEMA: { AMBITION: 3, RESPONSIBLE: 1, SOCIAL: 9, FISH: 9, CHAOS: 4, EGO: 7 },
+  TEVE: { AMBITION: 2, RESPONSIBLE: 2, SOCIAL: 1, FISH: 10, CHAOS: 8, EGO: 5 },
+  BENZ: { AMBITION: 3, RESPONSIBLE: 9, SOCIAL: 4, FISH: 5, CHAOS: 8, EGO: 2 },
+  ZLAT: { AMBITION: 8, RESPONSIBLE: 3, SOCIAL: 2, FISH: 1, CHAOS: 7, EGO: 10 },
+  BALO: { AMBITION: 1, RESPONSIBLE: 1, SOCIAL: 4, FISH: 6, CHAOS: 10, EGO: 6 },
+  SUAR: { AMBITION: 9, RESPONSIBLE: 6, SOCIAL: 3, FISH: 1, CHAOS: 10, EGO: 6 },
+  MART: { AMBITION: 6, RESPONSIBLE: 7, SOCIAL: 5, FISH: 2, CHAOS: 9, EGO: 8 }
+};
+
+const resultTextDatabase = {
+  MES: { title: "【MES】梅老板", tags: ["神级冷静", "自带体系", "工位散步", "无声绝杀"], desc: "外界就算吵成精神病院，哪怕加拿大 TTC 又无故全线大晚点、教授在 Deadline 前极限改要求，也动摇不了你半分。你根本不需要向任何人证明自己，因为你拥有极其恐怖的‘绝对冷静内核’。在职场或学校的草台班子组里，你平时存在感极低，甚至在工位上看起来经常处于‘散步摸鱼’状态，以至于猪队友以为你也是个混子。\n\n实则不然！你的大脑是在进行全链路的动态扫描。当所有人因为 system 全面崩溃、或者 Final 遇到史诗级地狱难题而抓狂红温时，你才会不发一言地走向键盘，在 0.1秒内精准找出最核心的致命漏洞，反手写出一套神级方案完成惊天绝杀。你是不需要无效 Coffee Chat、不屑于 PPT 邀功、大隐隐于市的终极高产巨擘。低调、神圣、一击制胜，有你坐镇的团队，就代表着绝对的底气！" },
+  CR7: { title: "【CR7】罗总裁 ", tags: ["极限自律", "不服来战", "胜负欲天花板", "Siuxxx"], desc: "你就是北美留学生/职场人里的‘精神图腾’与‘逆境之王’！在你的字典里，错的永远是这个世界，绝对不是你自己。你骨子里骄傲到了极点，拥有令人发指的抗压能力和极限自律。你就是那种越是在小红书上被嘴、越是被奇葩房东无理克扣押金、越是被白人同事抢了功劳，就越能原地爆炸出恐怖战斗力的狠角色。\n\n面对加拿大就业市场的寒冬，别人在摆烂躺平，你却能一边喝着红牛冰美式一边开启一天狂投 100 份简历的无情刷题模式。你极其享受在聚光灯下打脸质疑者快感。每当 Deadline 临近、项目眼看要彻底流产的最后一秒，你总能轰出不可思议的交付暴击，强行扛着整个团队逆天改命。只要你还在工位上一天，团队就没有放弃的理由。当你拿到属于你的满级包和枫叶卡时，配得上对着全场大喊一声：Siuuuuu！" },
+  CNA: { title: "【CNA】东国队", tags: ["海参供能", "雷打不动", "复盘PPT战神", "绝不破防"], desc: "恭喜你！触发了本系统最具讽刺艺术、最万里挑一的顶级隐藏理财款！你完美契合了‘拿着全组最高规格的补给预算，交出全场最烂业务答卷’的赛博因果律。在项目里，你常年处于一种梦游和迷幻状态，经手的代码和作业往往‘停球五米远’，给队友和老板造成的暴击伤害堪称毁灭性。\n\n但你最恐怖、最堪称全服第一的，是你的‘反向破防厚脸皮系统’。只要一到复盘汇报会，你就能瞬间激活嘴硬防御，把所有的锅精准甩给基建不好、天气太冷、用户不成熟。哪怕整个项目被你带进了 CRA 的重点审计名单，你依然能面不改色地拿着高昂薪水。业务能力虽然一言难尽，但由于你雷打不动、坚不可摧的心理防御力，你的综合抗压与精神内耗免疫实力在全服高居榜首。只要你不破防，破防的就是别人！" },
+  DEALMOON: { title: "【DEALMOON】极客羊毛尊者", tags: ["神级凑单", "Bug价火速上车", "史低价绝杀"], desc: "打工是不可能老老实实打工的，你拥有全网最敏锐的‘规则漏洞嗅觉’和突破天际的绝赞运气！你已经用无可挑剔的运气，彻底白嫖、看看并白嫖了这套 Z-Score 算法的底层逻辑。在职场上，你通常是无情的公司福利和 Bug 级资源的终极猎手，对带薪拉屎、吃垮茶水间和带薪摸鱼的技术炉火纯青。\n\n而在生活里，你则是手握‘加拿大省钱快报’的最强羊毛终结者。不管是 Stanley 吸管杯只要 $5 块钱的惊天 Bug价，还是本地新开高端网红餐厅的独家半价套餐，都绝对逃不过你的法眼。你最擅长在别人还在傻傻货比三家的时候，光速全款秒下 20 个直接绝杀大盘。任何想割你韭菜的资本家遇到你，最后都会被你反向薅到连底裤都不剩。你就是游走在赛博规则边缘的省钱之神，羊毛界的至高尊者！" },
+  HAAL: { title: "【HAAL】无情打卡机", tags: ["莫得感情", "莫得野心", "冷酷吃饼机器"], desc: "你是北美留学/职场圈里最恐怖的‘纯人肉赛亚人终结者’。在工位上，你就像中国互联网尊称的‘魔人布欧’一样，是个毫无感情的顶级硬件数值怪。你的责任心直接拉满，只要接了活就绝对不摸鱼偷懒，不管遇到多么恶劣的地狱级需求，你都能凭借蛮不讲理的硬核执行力，上演一出‘生吃防线’、强行把交付结果砸进终点的职场暴击。\n\n然而，你对虚头巴脑的职场情怀和当高管的野心毫无兴趣。由于你的社交欲望彻底归零，你成了全公司最出名的‘Coffee Chat 绝缘体’。你甚至懒得和同事进行任何除了业务以外的眼神交流，开会时由于气场太硬、表情冷酷，常年让猪队友怀疑你随时会‘吃人’。但实际上，你只是个极其纯粹的‘吃饼机器’——你对办公室政治一跨不通，心里根本没那么多弯弯绕绕。只要大腿队友能把明确的 PRD 喂到你嘴边，你就敢冷酷无情地用 100% 的高保真答卷惊艳全场。5点一到，卡点关机，多待一秒都是对你赛亚人血统的侮辱！" },
+  MBAP: { title: "【MBAP】满级掌权‘姆总监’", tags: ["终极职场判官", "拿捏两头拿满级包", "架空董事会", "超级核心Carry位"], desc: "恭喜你，你已经脱离了普通社畜的范畴，年纪轻轻就活成了职场神话般的‘姆总监’！你手里握着绝对无解的硬核业务能力，一启动就如同风驰电掣的核武器，随时能一个人带飞全组。但这绝不是你最可怕的地方。\n\n你最顶级的艺术，是对‘特权’和‘利益’的极限拿捏。在你的概念里，所谓的‘责任心’从来不是无脑给资本家卖命，而是精准对等——给多少特权，办多大事。你满嘴都是最顶级的战略蓝图，极其擅长把董事会玩弄于股掌之间。在老东家时，你凭借一己之力逼得大老板给你放权，连高管的免职、团队的人事任免都得看你的眼色，直接架空管理层、自立为王；而当你决定跳槽时，你又能保持绝对理智的‘微量整活’，把行业两大巨头拉扯得团团转，把签字费、期权和满级大包全部薅尽，最后还能风光入职‘梦想大厂’。手段硬核、野心滔天、利益至上，你不是在求职，你是在挑哪个资本家配为你发薪水！" },
+  KANT: { title: "【KANT】随叫随到坎爹", tags: ["哪里需要哪里搬", "硬核全能", "责任心大爆炸"], desc: "加拿大表面被 70% 的大雪覆盖，剩下 30% 的陆地，全是你正在默默补位的烂摊子！你的责任心（RESPONSIBLE: 10）已经到了近乎自虐的地步。你明明没有多大的向上爬的野心，但只要团队有人失踪或者窗子破了，永远会含泪一个人把所有活全干了。你主打的就是高级降维和极致利他，整个团队的续命全指望你，求求对自己好点吧！" },
+  KROO: { title: "【KROO】到点下班优雅阿宽", tags: ["99%精准度", "极致高冷", "低效加班一生黑"], desc: "你是北美职场上最冷酷的精密仪器，低效加班的终极天敌。你大脑自带军工级 CPU，对往上爬当高管毫无野心（AMBITION: 2）。你在组里之所以这么狂、自我意识这么高（EGO: 9），纯粹是因为你的责任心和业务掌控力永远无懈可击（RESPONSIBLE: 10）。别人写 500 行代码调了一周的 Bug，你用 5 行最优雅的逻辑直接闭环。你平时也会适当摸摸鱼（FISH: 4），但只要是你接手的活，交付质量就绝对是神级。5:00 PM 准时一到，你绝对多待一秒都是对自己高贵灵魂的侮辱，优雅拿包关机走人，留下一群对着你完美工作结果目瞪口呆、只能留下来继续苦逼加班的同事。高冷，是因为你确实有这个资本！" },
+  NEUE: { title: "【NEUE】跨界小新", tags: ["超前防守", "太平洋警察", "闲不下来的操心命"], desc: "公司的职责范围、学校的专业边界根本框不住你这个高责任心、又极度爱整活的灵魂（RESPONSIBLE: 8, CHAOS: 7）。作为一个后台开发，你经常顶着极强的自我意识（EGO: 7）冲到前线去帮产品经理改逻辑，一个人操心三个人的活。你这种喜欢‘越界出击’的做派虽然偶尔让讲究边界感的北美同事感到压力，但不可否认的是，你总能靠着敏锐的风险嗅觉，在团队全面崩盘前强行把车头调回来。你是个闲不下来的操心命，有野心也有担当，用最硬核的出击帮整条防线兜底！" },
+  BECK: { title: "【BECK】精致贝影", tags: ["独门绝学制导", "CoffeeChat圣体", "包装宣发天花板"], desc: "你手里握着全行业最让人眼红的独门硬核绝学——招牌式的‘贝氏弧线’级神级交付。你不需要像别人那样全方位死磕，因为只要你一出手，就能在几百米开外精准制导，一招定乾坤。\n\n你对职场内卷和抢当管理层毫无兴趣，也懒得摸鱼浪费生命。你把大半的精力都用来做个人品牌建设和情商社交了。你经手的 PPT 排版永远像艺术品，你发在 LinkedIn 上的合照永远散发着精英光芒。你天生就是 Coffee Chat 的圣体，极其擅长通过链接资源把枯燥的职场活成高级时尚秀场。靠着‘一招绝活撑起半边天，顶级气质拉满全场’，你就是最让人羡慕的职场破圈赢家！" },
+  MULL: { title: "【MULL】氛围组二娃", tags: ["天天说垃圾话", "解题达人", "智商情商双高"], desc: "平时天天插科打诨、在茶水间讲垃圾话、在朋友圈发搞笑段子，大家都以为你是个不着调的氛围组开心果。实际上你是隐藏的顶级高智商控场王！你拥有极强的社交洞察力（SOCIAL: 10）和务实解决问题的能力。当跨部门吵成一团、小组合作陷入死局时，只有你能一边讲着笑话，一边面带微笑地把死路跑通，深藏不露说的就是你。" },
+  HAZA: { title: "【HAZA】满级退休汉堡王", tags: ["曾经是顶级大腿", "带薪拉屎至高神", "吃垮茶水间", "无欲无求"], desc: "外号扎球王！可千万别小看你，你当年也是单挑全场、拿过 MVP 的硬核大腿。但自从你拿到了满意的神级待遇、实现了‘儿皇梦’之后，你体内的咸鱼封印彻底解除，光速开启了提前退休生活。\n\n现在的你，对任何职场晋升、内卷、画饼、哪怕是办公室政治都毫无欲望。在工位上的最大乐趣变成了点 Tims、研究下午茶、和吃垮公司的茶水间零食。任何工作在你眼里，都不如一顿垃圾食品来得香。既然已经财务自由/拿到满级包，多做一分钟都是对你快乐汉堡的侮辱。老子曾经拯救过世界，现在躺平拿工资，有何不可？" },
+  TEVE: { title: "【TEVE】无情特思乡", tags: ["等价交易", "假期神圣不可侵犯", "满战力摆烂", "资本家克星"], desc: "别人上班是为了虚无的头衔，你上班只是为了跟资本家进行等价的纯粹肉体交易！\n\n可千万别被你的懒散骗了，你骨子里其实是拥有恐怖核心 Carry 能力的‘野兽打工人’。只要预算给够，你一个人就能跑出全组两个人的交付覆盖率，满场飞奔把项目砸到交付线上！\n\n然而，你对公司的忠诚度永远为零。多一分钟无意义的加班都是对生命和本地烤肉的侮辱。一旦公司试图用画大饼来 PUA 你，或者给你上点不合理的窒息压力，你体内的“发疯整活基因”就会瞬间激活——直接无预警掉线，或者突然宣称自己“太想家了要请假回老家”，把烂摊子和脑梗的资本家扔在原地。这种能力拉满、随时掀桌、精神绝对自由的内核，才是职场的最高境界！" },
+  NEMA: { title: "【NEMA】带薪摸鱼马儿", tags: ["技术流躺平", "周五下午人间蒸发", "离奇请假条"], desc: "你是一个拥有顶级天赋和降维打击能力的业务天花板。普通人需要死磕一周的硬核任务，你稍微灵光一现、秀一把华丽的核心技术，就能在半天内轻松搞定，甚至还能顺便整几个惊艳全场的‘马赛回旋’式神操作。\n\n然而，你的更多精力都用来研究如何合理开溜和享受生活了。在你眼里，上班只是副业，蹦迪、蹦极和社交才是主业。一到周五下午，你自动在 Slack 上切断网络线装死，热衷于在各种关键攻坚节点用“过马路被加拿大鹅咬了”等离奇理由请假去蹦迪享受生活，资本家遇到你算倒了血霉。" },
+  BENZ: { title: "【BENZ】终极背锅侠", tags: ["因果律背锅", "雷达型兜底", "吸锅圣体本尊"], desc: "你就是这家加拿大草台班子大厂‘最后的因果律防火墙’！你其实挺佛系了，没什么野心（AMBITION: 3），但你自带“吸锅圣体”——不管多么荒谬的 Bug 或者是奇葩猪队友捅的马蜂窝（CHAOS: 8），最后总能绕地球头七圈精准砸到你头上。而你又偏偏长了一颗极度靠谱、极度负责的社畜心脏（RESPONSIBLE: 9）。你天天在小红书发帖裸辞，结果每次大难临头你又默默掏出了铲子去擦屁股。大怨种本种，说的就是你。" },
+  ZLAT: { title: "【ZLAT】我就是上帝", tags: ["天老大我老二", "单挑整个部门", "行走的人间上帝"], desc: "北美傲气天花板，行走的人间上帝！你的自我意识（EGO: 10）已经突破天际。你从来不把公司死板的制度 and 无脑的老板放在眼里。在你的世界观里，不是公司雇佣了你，而是你屈尊下凡来拯救这家草台班子。只要逼格和面子给你给够，你一个人就能正面硬刚单挑整个部门。你有着极强的向上爬的野心（AMBITION: 8），但你绝对不跪着要饭，必须站着把钱挣了！" },
+  BALO: { title: "【BALO】思考人生大师", tags: ["脑回路九曲回肠", "无预警断线", "终极气氛破坏者"], desc: "恭喜你，你拿到了本全场最不可预测的‘终极发疯神位’（CHAOS: 10）。你的大脑回路和正常人完全不在一个维度。执行任务、写代码或者小组开会到一半时，你会突然毫无预警地陷入关于“我是谁、加拿大为什么这么冷”的深度哲学思考，直接神游太空。你不仅自己摸鱼，还能用极其清奇的脑回路把客户、老板和催进度的同事逼到集体发疯。赛博艺术家，说的就是你。" },
+  SUAR: { title: "【SUAR】红温咬人侠", tags: ["开会两分钟红温一整天", "会议室嘴炮", "高能火药桶"], desc: "你平时是一个极其低调、甚至疯狂死磕业绩的‘超级劳模打工人’。你的业务野心极高（AMBITION: 9），执行力强到让人头皮发麻，哪怕项目再难，你也能像‘神锋’一样单枪匹马撕开防线，把业绩狠狠砸在老板脸上。\n\n然而，你是一个标准的‘隐性火药桶’。你的情绪在日常极度紧绷和对胜利的偏执追求下，会处于一种诡异的压抑状态。平时你对不合理的无脑需求甚至能隐忍不发，但只要在某个极度高压、所有人都在拉扯的关键节点，你体内的精神防线会毫无征兆地突然断裂——你不会跟你废话拉扯，而是直接在所有人没反应过来的时候，用最狠毒、最出乎意料的‘降维闪击’把对方彻底废掉。这种平时闷声干大事、关键时刻突然‘咬人’的顶级刺客，才是全公司最不敢招惹的存在！" },
+  MART: { title: "【MART】嘴炮第一名", tags: ["反向挑衅", "职场心理战", "素质全看心情"], desc: "北美圈最让人咬牙切齿的心理战大师。最神奇的是，你明明活干得挺靠谱（RESPONSIBLE: 7），但你就是抑制不住自己想要整活和发疯的灵魂（CHAOS: 9）。你最擅长在交付成果、或者是和竞争对手 PK 赢了的时候，给对方跳一段冷嘲热讽拉满的桑巴舞。别人越是在背后扎你小人，你干得越嗨，典型的“走别人的路，让别人无路可走”的顶级心理流恶人。" },
+  RAMO: { title: "【RAMO】护短大哥水爷", tags: ["极度护短", "气场两米八", "最后一分钟绝杀"], desc: "作风极其强硬、作风霸道的硬核霸道总裁。你在能力、野心和自我意识上处于全方位统治地位，同时也是个愿意为了帮朋友/组员出头而不惜跟高层拍桌子发疯（CHAOS: 6）的极度护短人格。谁卡你的流程你敢跟谁在办公室死磕，但在项目截止前的最后一分钟你总能完成逆天绝杀交付。只要在你的羽翼下，组员的安全感直接拉满。" }
+};
+
+// ==========================================
+// 3. 核心评估引擎：自适应 Z-Score 归一化升级版
+// ==========================================
+function getFinalPersonality(scores) {
+  const roll = Math.random() * 100;
+
+  if (scores.FISH >= 8 && scores.CHAOS <= 2) {
+    if (roll < 12.0) { return "MES"; } 
+  }
+  
+  if (scores.AMBITION >= 8 && scores.EGO >= 8) {
+    if (roll >= 12.0 && roll < 24.0) { return "CR7"; }
+  }
+  
+  if (scores.CHAOS >= 8 && scores.RESPONSIBLE <= 4) {
+    if (roll >= 24.0 && roll < 36.0) { return "CNA"; }
+  }
+
+  const q14Ans = window.userAnswers[13];
+  const q15Ans = window.userAnswers[14];
+  const meetsConditions = (q14Ans === 0 && (q15Ans === 0 || q15Ans === 1));
+
+  if (meetsConditions) {
+     if (roll >= 36.0 && roll < 40.0) { return "DEALMOON"; }
+  }
+
+  const GLOBAL_MEANS = { 
+    AMBITION: 4.2,     
+    RESPONSIBLE: 7.8,  
+    SOCIAL: 5.0,       
+    FISH: 4.8,         
+    CHAOS: 1.8,        
+    EGO: 3.5           
+  };
+
+  const GLOBAL_SDS = { 
+    AMBITION: 1.8, RESPONSIBLE: 2.2, SOCIAL: 1.9, 
+    FISH: 2.0, CHAOS: 1.1, EGO: 1.5 
+  };
+
+  const zScores = {};
+  for (let dim in scores) {
+     zScores[dim] = (scores[dim] - GLOBAL_MEANS[dim]) / GLOBAL_SDS[dim];
+  }
+
+  const campScores = {
+    juan: (zScores.RESPONSIBLE * 1.5) + (zScores.AMBITION * 0.5) - (zScores.FISH * 1.0),
+    social: (zScores.SOCIAL * 1.5) + (zScores.AMBITION * 0.5),
+    fish: (zScores.FISH * 1.8) - (zScores.RESPONSIBLE * 0.8),
+    chaos: (zScores.CHAOS * 1.5) + (zScores.EGO * 0.8)
+  };
+
+  let topCamp = 'juan';
+  let maxCampScore = -Infinity;
+  for (let camp in campScores) {
+    if (campScores[camp] > maxCampScore) { maxCampScore = campScores[camp]; topCamp = camp; }
+  }
+
+  let candidatePool = CAMP_MAPPING[topCamp] || ['KANT', 'KROO', 'NEUE', 'HAAL'];
+  let normalResult = candidatePool[0];
+  let minDistance = Infinity;
+
+  candidatePool.forEach(pKey => {
+     const base = profile6DMatrix[pKey] || { AMBITION:5, RESPONSIBLE:5, SOCIAL:5, FISH:5, CHAOS:5, EGO:5 };
+     let distance = Math.sqrt(
+        Math.pow(zScores.AMBITION - ((base.AMBITION - GLOBAL_MEANS.AMBITION)/GLOBAL_SDS.AMBITION), 2) +
+        Math.pow(zScores.RESPONSIBLE - ((base.RESPONSIBLE - GLOBAL_MEANS.RESPONSIBLE)/GLOBAL_SDS.RESPONSIBLE), 2) +
+        Math.pow(zScores.SOCIAL - ((base.SOCIAL - GLOBAL_MEANS.SOCIAL)/GLOBAL_SDS.SOCIAL), 2) +
+        Math.pow(zScores.FISH - ((base.FISH - GLOBAL_MEANS.FISH)/GLOBAL_SDS.FISH), 2) +
+        Math.pow(zScores.CHAOS - ((base.CHAOS - GLOBAL_MEANS.CHAOS)/GLOBAL_SDS.CHAOS), 2) +
+        Math.pow(zScores.EGO - ((base.EGO - GLOBAL_MEANS.EGO)/GLOBAL_SDS.EGO), 2)
+     );
+     if (distance < minDistance) { minDistance = distance; normalResult = pKey; }
+  });
+
+  return normalResult;
+}
+
+function getCurrentLiveScores() {
+  let totals = { AMBITION:0, SOCIAL:0, CHAOS:0, FISH:0, EGO:0, RESPONSIBLE:0 };
+  userAnswers.forEach((ansIdx, qIdx) => {
+    const s = questionsDatabase[qIdx].options[ansIdx].score;
+    for (let dim in s) { totals[dim] += s[dim]; }
+  });
+  return totals;
+}
+
+function calculateCyberPrice(personalityKey, userScores) {
+  const tier = rankTiers[personalityKey] || { base: 70000000 };
+  if (['DEALMOON', 'MES', 'CR7', 'CNA'].includes(personalityKey)) return tier.base;
+  const delta = ((userScores.AMBITION || 2) * 1500000) + ((userScores.RESPONSIBLE || 2) * 1200000) - ((userScores.FISH || 2) * 2000000);
+  return Math.floor(Math.min(tier.base * 1.15, Math.max(tier.base * 0.85, tier.base + delta)));
+}
+
+function getBeatPercentage(personalityKey, price) {
+  const tier = rankTiers[personalityKey] || { minP: 40.0, maxP: 49.9 };
+  const ratio = (price - tier.base) / (tier.base * 0.15 || 1);
+  let percent = tier.minP + (tier.maxP - tier.minP) * (0.5 + Math.max(-0.5, Math.min(0.5, ratio)));
+  return percent.toFixed(1) + "%";
+}
+
+function calculateMadIndex(personalityKey, userScores) {
+  if (personalityKey === 'DEALMOON') return 68; if (personalityKey === 'CNA') return 95; if (personalityKey === 'BALO' || personalityKey === 'SUAR') return 99;
+  let baseMad = ((userScores.CHAOS || 2) * 12) + ((userScores.EGO || 2) * 6);
+  return Math.max(15, Math.min(98, baseMad));
+}
+
+function formatPrice(num) { return "€" + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+function escapeHTML(str) { return str.replace(/[&<>"'/]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;','/':'&#x2F;'}[m])); }
+
+function showCyberToast(message) {
+  const wrapper = document.getElementById('toast-wrapper');
+  const toast = document.createElement('div');
+  toast.className = "cyber-toast fixed left-1/2 -translate-x-1/2 bg-gray-900/95 backdrop-blur-md border border-gray-800 text-white font-medium text-xs py-3 px-5 rounded-xl shadow-2xl flex items-center gap-2 z-[9999]";
+  toast.innerHTML = `<span>🔔</span> <span>${message}</span>`;
+  wrapper.appendChild(toast);
+  setTimeout(() => toast.remove(), 1800);
+}
+
+// ==========================================
+// 4. 答题交互逻辑
+// ==========================================
+function handleSelectOption(optionIndex) {
+  userAnswers[currentQuestionIndex] = optionIndex;
+  currentQuestionIndex++;
+  if (currentQuestionIndex < questionsDatabase.length) { renderQuestionPage(); }
+  else { renderResultPage(getFinalPersonality(getCurrentLiveScores()), getCurrentLiveScores()); }
+}
+
+function handleGoBack() {
+  if (currentQuestionIndex > 0) {
+    currentQuestionIndex--;
+    renderQuestionPage();
+  }
+}
+
+function getHeaderBrandHtml() {
+  return `<div class="flex items-center justify-between px-2 mb-4 bg-white/95 backdrop-blur-sm p-3 rounded-2xl border border-white/20 shadow-sm">
+       <div class="flex items-center gap-2">
+          <img src="${cardImages.LOGO}" class="h-6 object-contain" alt="Logo" />
+          <span class="text-xs font-black text-gray-700 border-l-2 pl-2 border-[#D92128]">测测你是哪种世界杯癫子</span>
+       </div>
+       <span class="text-[10px] bg-[#D92128]/10 text-[#D92128] px-2 py-0.5 rounded font-bold">Dealmoon CA娱乐版</span>
+    </div>`;
+}
+
+function renderQuestionPage() {
+  const container = document.getElementById('main-container');
+  const qData = questionsDatabase[currentQuestionIndex];
+  let optionsHtml = "";
+  qData.options.forEach((opt, idx) => {
+    optionsHtml += `<button onclick="handleSelectOption(${idx})" class="w-full text-left bg-white border border-gray-200 hover:border-[#D92128] p-4 my-2 rounded-xl text-sm font-medium text-gray-700 transition-all active:scale-[0.98] shadow-sm flex items-center gap-3">
+        <span class="w-6 h-6 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center text-xs font-bold font-mono">${String.fromCharCode(65 + idx)}</span>
+        <span class="flex-1">${escapeHTML(opt.text)}</span>
+      </button>`;
+  });
+
+  const backBtnHtml = currentQuestionIndex > 0 
+    ? `<button onclick="handleGoBack()" class="flex items-center gap-1.5 px-4 py-2 bg-gray-100 text-gray-500 rounded-full text-xs font-bold hover:bg-gray-200 transition-all active:scale-95"><span>⬅️</span> <span>上一题</span></button>` 
+    : `<div></div>`;
+
+  container.innerHTML = `${getHeaderBrandHtml()}
+    <div class="bg-white rounded-2xl p-6 shadow-xl max-w-sm mx-auto border border-gray-100">
+      <div class="w-full bg-gray-100 h-1.5 rounded-full mb-6">
+         <div class="bg-[#D92128] h-1.5 rounded-full progress-bar" style="width: ${Math.floor((currentQuestionIndex / questionsDatabase.length) * 100)}%"></div>
+      </div>
+      <div class="flex justify-between items-center mb-3">
+        <span class="text-[11px] font-bold text-[#D92128] uppercase tracking-widest">Cyber Scouting</span>
+        <span class="text-xs font-mono text-gray-400 font-bold">${currentQuestionIndex + 1} / ${questionsDatabase.length}</span>
+      </div>
+      <h2 class="text-base font-black text-gray-800 leading-snug mb-4">${escapeHTML(qData.text)}</h2>
+      <div class="options-group">${optionsHtml}</div>
+      <div class="mt-6 flex justify-start">${backBtnHtml}</div>
+    </div>`;
+}
+
+// ==========================================
+// 5. 结果页渲染逻辑 (精准适配图 17bfc4e7765741c4b0ab9ec17bcebd28.jpg 红框截图要求)
+// ==========================================
+function renderResultPage(finalKey, userScores) {
+  const pData = resultTextDatabase[finalKey];
+  const computedMadIndex = calculateMadIndex(finalKey, userScores);
+  const computedPrice = calculateCyberPrice(finalKey, userScores);
+  const computedBeat = getBeatPercentage(finalKey, computedPrice);
+  window.currentResultCache = { personalityKey: finalKey, price: computedPrice, beatPercent: computedBeat, madIndex: computedMadIndex };
+
+  let tagsHtml = "";
+  if (Array.isArray(pData.tags)) {
+    pData.tags.forEach(tag => { 
+      tagsHtml += `<div class="inline-block mr-3 mb-1" style="vertical-align: middle;">
+           <span class="text-[#D92128] text-[11px] font-black tracking-tight block" style="line-height: 1.2;"># ${escapeHTML(tag)}</span>
+        </div>`; 
+    });
+  }
+
+  document.getElementById('main-container').innerHTML = `${getHeaderBrandHtml()}
+    <!-- poster-outer-wrapper 就是专门存放红框核心部分的容器 -->
+    <div id="poster-outer-wrapper" class="w-full max-w-sm mx-auto relative rounded-3xl shadow-2xl overflow-hidden border border-white/40 cursor-pointer">
+        <!-- html2canvas-source-dom 内仅包裹图片、姓名、身价、发疯等红框内的核心组件 -->
+        <div id="html2canvas-source-dom" class="w-full bg-white text-gray-800 relative block" style="width: 100%;">
+            <div class="relative w-full overflow-hidden block">
+                <img src="${cardImages[finalKey] || ''}" crossOrigin="anonymous" class="w-full aspect-[4/5] object-cover block" />
+            </div>
+            <div class="p-5 bg-gradient-to-b from-white to-gray-50 block text-left" style="line-height: 1.2;">
+               <div class="block mb-3">
+                  <h3 class="text-xl font-black tracking-tight text-gray-900 mb-2" style="line-height: 1.2;">${escapeHTML(pData.title)}</h3>
+                  <div class="block" style="line-height: 1; font-size: 0;">${tagsHtml}</div>
+               </div>
+               <div class="grid grid-cols-2 gap-4 bg-gray-100/70 p-3 rounded-2xl border border-gray-200/50 text-[12px] mb-3">
+                  <div class="block">
+                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-wider" style="line-height: 1;">你的身价</p>
+                     <p class="text-lg font-black text-[#D92128] mt-1" style="line-height: 1;">${formatPrice(computedPrice)}</p>
+                  </div>
+                  <div class="block">
+                     <p class="text-[10px] font-black text-gray-400 uppercase tracking-wider" style="line-height: 1;">发疯指数</p>
+                     <div class="flex items-center gap-2 mt-2" style="line-height: 1;">
+                        <div class="w-20 bg-gray-200 h-2 rounded-full overflow-hidden relative block">
+                            <div class="bg-gradient-to-r from-amber-400 to-amber-600 h-full rounded-full" style="width: ${computedMadIndex}%"></div>
+                        </div>
+                        <span class="text-sm font-black text-amber-600 font-mono inline-block" style="line-height: 1;">${computedMadIndex}%</span>
+                     </div>
+                  </div>
+               </div>
+               <div class="block text-xs font-bold text-[#D92128]" style="line-height: 1.2; margin-top: 4px;">
+                  <span class="inline-block mr-1">⚡</span><span>击败加拿大全服 ${computedBeat} 的同事</span>
+               </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 人格描述放在外面，不参与 canvas 截图，保证最终保存的图片干净漂亮 -->
+    <div class="bg-white/95 border border-white/40 rounded-2xl p-5 my-4 shadow-xl max-w-sm mx-auto text-left">
+      <p class="text-xs font-black text-[#D92128] mb-2.5 uppercase tracking-widest font-mono">人格描述</p>
+      <p class="text-sm text-gray-700 leading-relaxed bg-gray-50/50 p-3.5 rounded-xl border border-gray-100 whitespace-pre-line font-medium">${escapeHTML(pData.desc)}</p>
+    </div>
+
+    <div class="action-zone max-w-sm mx-auto text-center px-4 mt-4">
+      <p class="text-[11px] text-gray-600 mb-2 font-medium">💡 提示：点击或长按上方卡片，即可将纯净身价数据图保存至相册！</p>
+      <button onclick="executeShareAndRedirect()" class="w-full bg-[#D92128] hover:bg-[#b81b21] text-white font-black py-3.5 px-6 rounded-full shadow-xl transition-all transform active:scale-[0.98] text-base tracking-wide flex items-center justify-center gap-2">
+         <span>📋 复制我的高阶报告并领补给</span>
+      </button>
+      <p class="text-xs font-bold text-gray-500 mt-2 animate-pulse">✨ 复制成功后将自动在新窗口打开 Dealmoon 官方应用通道 ✨</p>
+    </div>`;
+
+  // 用 html2canvas 将纯净核心版转为单张可以长按保存/点击弹窗的 Base64 实体图片
+  setTimeout(() => {
+    const sourceDom = document.getElementById("html2canvas-source-dom");
+    const outerWrapper = document.getElementById("poster-outer-wrapper");
+    if (typeof html2canvas !== 'undefined' && sourceDom && outerWrapper) {
+        html2canvas(sourceDom, { useCORS: true, allowTaint: false, scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+            const base64Image = canvas.toDataURL("image/png");
+            const finalPosterImage = document.createElement("img");
+            finalPosterImage.src = base64Image;
+            finalPosterImage.className = "w-full h-auto block object-contain relative z-50 select-all cursor-pointer";
+            
+            // 【核心交互升级】：用户直接点击红框卡片时，弹出沉浸式灯箱引导，100% 确保用户能完美保存
+            finalPosterImage.addEventListener('click', () => {
+                const mask = document.createElement('div');
+                mask.className = "fixed inset-0 bg-black/80 z-[99999] flex flex-col items-center justify-center text-white p-6 animate-fade-in";
+                mask.innerHTML = `
+                    <div class="text-center space-y-4 w-full max-w-xs">
+                        <div class="text-3xl animate-bounce">👇</div>
+                        <p class="text-base font-black tracking-wide">已为你打包核心数据卡片</p>
+                        <p class="text-xs text-gray-300 font-medium">请【长按】下方图片直接保存至相册</p>
+                        <div class="border border-white/20 rounded-3xl overflow-hidden shadow-2xl mx-auto mt-2">
+                            <img src="${base64Image}" class="w-full h-auto select-all" />
+                        </div>
+                        <button class="mt-4 px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-full text-xs font-bold tracking-wider transition-all">
+                            返回测试页
+                        </button>
+                    </div>
+                `;
+                mask.addEventListener('click', () => mask.remove());
+                document.body.appendChild(mask);
+            });
+
+            // 隐藏原本的 DOM 节点，用生成的、干净的球星卡图片替换它
+            sourceDom.style.display = "none";
+            outerWrapper.appendChild(finalPosterImage);
+        }).catch(e => { console.error(e); });
+    }
+  }, 350);
+}
+
+function executeShareAndRedirect() {
+  const cached = window.currentResultCache;
+  if (!cached.personalityKey) { showCyberToast("⚡ 报告仍在矩阵计算中..."); return; }
+  const finalKey = cached.personalityKey;
+  const EXCLUDED_KEYS = ['DEALMOON', 'MES', 'CR7', 'CNA'];
+  if (!EXCLUDED_KEYS.includes(finalKey) && !window.hasUsedShareSecondChance) {
+     window.hasUsedShareSecondChance = true;
+     const secondaryKey = getFinalPersonality(getCurrentLiveScores());
+     if (EXCLUDED_KEYS.includes(secondaryKey)) {
+        showCyberToast("🎉 分享触发隐藏矩阵共振，正在重新注入...");
+        setTimeout(() => renderResultPage(secondaryKey, getCurrentLiveScores()), 1000);
+        return;
+     }
+  }
+  const textToCopy = `🔥 我在【Dealmoon 加拿大打工补给站】测出了球星转世人格是：【${resultTextDatabase[finalKey].title}】！💰 身价：${formatPrice(cached.price)}\n⚽ 快来测测你的身价：${ACTIVITY_SHARE_URL}`;
+  navigator.clipboard.writeText(textToCopy).then(() => {
+    showCyberToast("📋 报告已复制！正在新页面打开...");
+    setTimeout(() => window.open(getTargetRedirectUrl(), '_blank'), 1100);
+  });
+}
+
+function getTargetRedirectUrl() {
+  const ua = navigator.userAgent || navigator.vendor || window.opera;
+  if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) { return URL_IOS; }
+  if (/android/i.test(ua)) { return URL_ANDROID; }
+  return URL_DESKTOP;
+}
+
+renderQuestionPage();
+</script>
+</body>
+</html>
