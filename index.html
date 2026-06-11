@@ -14,6 +14,10 @@
     <meta property="og:image" content="https://pub-61bbf26ae10a4c688d7e70666b38e117.r2.dev/images/dealmoon_logo.png">
     <meta property="og:url" content="https://www.dealmoon-test.com/">
 
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FFTI（世界杯发疯TI ）">
+    <meta name="twitter:description" content="测试你在北美的打工灵魂！解锁你的隐藏球...">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -31,6 +35,12 @@
             0% { filter: brightness(1) contrast(1); box-shadow: 0 0 0px rgba(217,33,40,0); }
             100% { filter: brightness(1.3) contrast(1.1); box-shadow: 0 0 30px rgba(217,33,40,0.6); }
         }
+        @media (hover: hover) {
+            .option-btn:hover {
+                border-color: #D92128 !important;
+                background-color: rgba(254, 242, 242, 0.3) !important;
+            }
+        }
     </style>
 </head>
 <body class="py-4 px-4 select-none min-h-screen" style="background: linear-gradient(135deg, #FFF0F3 0%, #FFF5ED 100%);">
@@ -39,7 +49,6 @@
     <div id="toast-wrapper" class="pointer-events-none fixed inset-x-0 bottom-20 z-[9999]"></div>
 
 <script>
-
 // ==========================================
 // 1. 全局配置与历史记录
 // ==========================================
@@ -99,7 +108,7 @@ const questionsDatabase = [
     { text: "拒绝：“这属于个人隐私，不合ESA劳工法。”", score: { EGO: 2 } },
     { text: "巨大红旗（Red Flag）！反手在Glassdoor爆料。", score: { SOCIAL: 2, RESPONSIBLE: 1 } }
   ]},
-  { id: 7, text: "临近下班（4:55 PM），经理突然在 Slack 上发来一个无脑紧急需求要求今晚搞定，你会？", options: [
+  { id: 7, text: "临近下班（4:55 PM），经理突然发来一个无脑紧急需求要求今晚搞定，你会？", options: [
     { text: "假装没看见，5:00 准时关机，明天再说。", score: { FISH: 2 } },
     { text: "委婉拒绝：“今天排期满了，明天一早处理。”", score: { RESPONSIBLE: 2 } },
     { text: "开启狂卷模式，连夜做完，必须刷满存在感。", score: { AMBITION: 2 } },
@@ -238,7 +247,7 @@ const resultTextDatabase = {
   ZLAT: { title: "【ZLAT】我就是上帝", tags: ["天老大我老二", "单挑整个部门", "行走的人间上帝"], desc: "北美傲气天花板，行走的人间上帝！你的自我意识（EGO: 10）已经突破天际。你从来不把公司死板的制度 and 无脑的老板放在眼里。在你的世界观里，不是公司雇佣了你，而是你屈尊下凡来拯救这家草台班子。只要逼格和面子给你给够，你一个人就能正面硬刚单挑整个部门。你物理着极强的向上爬的野心（AMBITION: 8），打你绝对不跪着要饭，必须站着把钱挣了！" },
   BALO: { title: "【BALO】思考人生大师", tags: ["脑回路九曲回肠", "无预警断线", "终极气氛破坏者"], desc: "恭喜你，你拿到了本全场最不可预测的‘终极发疯神位’（CHAOS: 10）。你的大脑回路和正常人完全不在一个维度。执行任务、写代码或者小组开会到一半时，你会突然毫无预警地陷入关于“我是谁、加拿大为什么这么冷”的深度哲学思考，直接神游太空。你不仅自己摸鱼，还能用极其清奇的脑回路把客户、老板和催进度的同事逼到集体发疯。赛博艺术家，说的就是你。" },
   SUAR: { title: "【SUAR】红温咬人侠", tags: ["开会两分钟红温一整天", "会议室嘴炮", "高能火药桶"], desc: "你平时是一个极其低调、甚至疯狂死磕业绩的‘超级劳模打工人’。你的业务野心极高（AMBITION: 9），执行力强到让人头皮发麻，哪怕项目再难，你也能像‘神锋’一样单枪匹马撕开防线，把业绩狠狠砸在老板脸上。\n\n然而，你是一个标准的‘隐性火药桶’。你的情绪在日常极度紧绷和对胜利的偏执追求下，会处于一种诡异的压抑状态。平时你对不合理的无脑需求甚至能隐忍不发，但只要在某个极度高压、所有人都在拉扯的关键节点，你体内的精神防线会毫无征兆地突然断裂——你不会跟你废话拉扯，而是直接在所有人没反应过来的时候，用最狠毒、最出乎意料的‘降维闪击’把对方彻底废掉。这种平时闷声干大事、关键时刻突然‘咬人’的顶级刺客，才是全公司最不敢招惹的存在！" },
-  MART: { title: "【MART】嘴炮第一名", tags: ["反向挑衅", "职场心理战", "素质全看心情"], desc: "北美圈最让人咬牙切齿的心理战大师。最神奇的是，你明明活干得挺靠谱（RESPONSIBLE: 7），运行逻辑也说推得通，但你就是抑制不住自己想要整活和发疯的灵魂（CHAOS: 9）。你最擅长在交付成果、或者是和竞争对手 PK 赢了的时候，给对方跳一段冷嘲热讽拉满的桑巴舞。别人越是在背后扎你小人，你干得越嗨，典型的“走别人的路，让别人无路可走”的顶级心理流恶人。" },
+  MART: { title: "【MART】嘴炮第一名", tags: ["反向挑衅", "职场心理战", "素质全看心情"], desc: "北美圈最让人咬牙切齿的心理战大师。最神奇的是，你明明活干得挺靠谱（RESPONSIBLE: 7），运行逻辑也说推得通，打你就是抑制不住自己想要整活和发疯的灵魂（CHAOS: 9）。你最擅长在交付成果、或者是和竞争对手 PK 赢了的时候，给对方跳一段冷嘲热讽拉满的桑巴舞。别人越是在背后扎你小人，你干得越嗨，典型的“走别人的路，让别人无路可走”的顶级心理流恶人。" },
   RAMO: { title: "【RAMO】护短大哥水爷", tags: ["极度护短", "气场两米八", "最后一分钟绝杀"], desc: "作风极其强硬、作风霸道的硬核霸道总裁。你在能力、野心 and 自我意识上处于全方位统治地位，同时也是个愿意为了帮朋友/组员出头而不惜跟高层拍桌子发疯（CHAOS: 6）的极度护短人格。谁卡你的流程你敢跟谁在办公室死磕，但在项目截止前的最后一分钟你总能完成逆天绝杀交付。只要在你的羽翼下，组员的安全感直接拉满。" }
 };
 
@@ -559,14 +568,10 @@ function fallbackCopyText(text) {
   }
 }
 
-// ==========================================
-// 🛠️ 核心修复：将此函数的写死文案改为动态渲染
-// ==========================================
 function handleFirstButtonSpecialAction() {
   const cached = window.currentResultCache;
   if (!cached.personalityKey) { showCyberToast("⚡ 报告仍在矩阵计算中..."); return; }
 
-  // 【已修复】动态抓取当前测试出来的真实球星标题与身价，与第二个按钮文案对齐
   const finalKey = cached.personalityKey;
   const specialTextToCopy = `🔥 我在【Dealmoon 加拿大打工补给站】测出了球星转世人格是：【${resultTextDatabase[finalKey].title}】！💰 身价：${formatPrice(cached.price)}\n\n⚽ 快来测测你的身价：${URL_SHARE_COPY}`;
   
@@ -735,5 +740,12 @@ function prepareQuestionsAndInit() {
 
 prepareQuestionsAndInit();
 </script>
+
+<script defer src="/_vercel/insights/script.js"></script>
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/web-vitals.js"></script>
+
 </body>
 </html>
