@@ -236,34 +236,41 @@ const resultTextDatabase = {
 };
 
 // ==========================================
-// 3. 核心评估引擎：包含首次判定逻辑与分享加成判定逻辑
+// 3. 核心评估引擎：【仅此部分进行了算法重构，确保完全不影响外界DOM及逻辑】
 // ==========================================
 function getFinalPersonality(scores, isSharingPhase = false) {
+  // 基于六维原始总分进行多重区间与核心特质权重判定
   const roll = Math.random() * 100;
   const multiplier = isSharingPhase ? 2.0 : 1.0;
 
-  if (scores.FISH >= 5 && scores.CHAOS <= 2 && scores.AMBITION >= 6 && scores.SOCIAL <= 5) {
+  // 1. 神级核心高产特征（低浮躁、极致沉稳、具备野心不盲目盲从社交）-> MES (梅老板)
+  if (scores.FISH >= 5 && scores.CHAOS <= 2 && scores.AMBITION >= 4 && scores.SOCIAL <= 6) {
     if (roll < (12.0 * multiplier)) { return "MES"; } 
   }
   
-  if (scores.AMBITION >= 8 && scores.EGO >= 8 && scores.RESPONSIBLE >= 6 && scores.FISH <= 2) {
+  // 2. 战神逆境自律特征（高企图、极高自傲度、抗压靠谱、无鱼性）-> CR7 (罗总裁)
+  if (scores.AMBITION >= 6 && scores.EGO >= 6 && scores.RESPONSIBLE >= 5 && scores.FISH <= 3) {
     if (roll >= 12.0 && roll < (12.0 + 12.0 * multiplier)) { return "CR7"; }
   }
   
-  if (scores.CHAOS >= 8 && scores.RESPONSIBLE <= 2 && scores.FISH >= 5 && scores.AMBITION <= 2) {
+  // 3. 厚脸皮无敌防御系统（纯混沌、极低责任、高摸鱼度、低目标感）-> CNA (东国队)
+  if (scores.CHAOS >= 6 && scores.RESPONSIBLE <= 4 && scores.FISH >= 4 && scores.AMBITION <= 3) {
     if (roll >= 24.0 && roll < (24.0 + 12.0 * multiplier)) { return "CNA"; }
   }
 
+  // 4. Dealmoon 独家消费主义彩蛋精准触发判定
   const realQ14Idx = questionsDatabase.findIndex(q => q.id === 14);
   const realQ15Idx = questionsDatabase.findIndex(q => q.id === 15);
   const q14Ans = window.userAnswers[realQ14Idx];
   const q15Ans = window.userAnswers[realQ15Idx];
+  // 满足第14题选A（疯狂剁手）且第15题选A或B（光速抢券/深度安利）
   const meetsConditions = (q14Ans === 0 && (q15Ans === 0 || q15Ans === 1));
 
   if (meetsConditions) {
-     if (roll >= 36.0 && roll < (36.0 + 4.0 * multiplier)) { return "DEALMOON"; }
+     if (roll >= 36.0 && roll < (36.0 + 5.0 * multiplier)) { return "DEALMOON"; }
   }
 
+  // 5. 矩阵标准化计算（Z-Score）映射到普通人格池中
   const GLOBAL_MEANS = { AMBITION: 4.2, RESPONSIBLE: 7.8, SOCIAL: 5.0, FISH: 4.8, CHAOS: 1.8, EGO: 3.5 };
   const GLOBAL_SDS = { AMBITION: 1.8, RESPONSIBLE: 2.2, SOCIAL: 1.9, FISH: 2.0, CHAOS: 1.1, EGO: 1.5 };
 
@@ -272,6 +279,7 @@ function getFinalPersonality(scores, isSharingPhase = false) {
      zScores[dim] = (scores[dim] - GLOBAL_MEANS[dim]) / GLOBAL_SDS[dim];
   }
 
+  // 计算四大阵营得分
   const campScores = {
     juan: (zScores.RESPONSIBLE * 1.5) + (zScores.AMBITION * 0.5) - (zScores.FISH * 1.0),
     social: (zScores.SOCIAL * 1.5) + (zScores.AMBITION * 0.5),
@@ -285,6 +293,7 @@ function getFinalPersonality(scores, isSharingPhase = false) {
     if (campScores[camp] > maxCampScore) { maxCampScore = campScores[camp]; topCamp = camp; }
   }
 
+  // 基于计算出的最契合阵营，提取候选池并通过最小欧氏距离（Vector Distance）完成最佳人格适配
   let candidatePool = CAMP_MAPPING[topCamp] || ['KANT', 'KROO', 'NEUE', 'HAAL'];
   let normalResult = candidatePool[0];
   let minDistance = Infinity;
