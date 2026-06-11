@@ -390,7 +390,7 @@ function getHeaderBrandHtml() {
   return `<div class="flex items-center justify-between px-2 mb-4 bg-white/95 backdrop-blur-sm p-3 rounded-2xl border border-white/20 shadow-sm">
        <div class="flex items-center gap-2">
           <img src="${cardImages.LOGO}" class="h-6 object-contain" alt="Logo" />
-          <span class="text-xs font-black text-gray-700 border-l-2 pl-2 border-[#D92128]">测测你是哪种世界杯瘸子</span>
+          <span class="text-xs font-black text-gray-700 border-l-2 pl-2 border-[#D92128]">FFTI（世界杯发疯TI ）</span>
        </div>
        <span class="text-[10px] bg-[#D92128]/10 text-[#D92128] px-2 py-0.5 rounded font-bold">Dealmoon CA娱乐版</span>
     </div>`;
@@ -566,7 +566,7 @@ function handleFirstButtonSpecialAction() {
   const cached = window.currentResultCache;
   if (!cached.personalityKey) { showCyberToast("⚡ 报告仍在矩阵计算中..."); return; }
 
-  const specialTextToCopy = `🔥 我在【Dealmoon CA 省钱快报】测出了世界杯发疯TI是：【【BALO】思考人生大师】！💰 身价：€17,000,000\n\n\n⚽ 快来测测你的身价：https://www.dealmoon-test.com/`;
+  const textToCopy = `🔥 我在【Dealmoon CA】测出了FFTI（世界杯发疯TI ）是：【${resultTextDatabase[finalKey].title}】！💰 身价：${formatPrice(cached.price)}\n\n⚽ 快来测测你的身价：${URL_SHARE_COPY}`;
   
   executeCopyText(specialTextToCopy).then((isSuccess) => {
     const node = document.getElementById("core-card-node");
@@ -648,7 +648,7 @@ function handleComprehensiveAction(targetType) {
 
   const finalKey = cached.personalityKey;
   const targetRedirectUrl = getTargetRedirectUrl();
-  const textToCopy = `🔥 我在【Dealmoon 加拿大打工补给站】测出了球星转世人格是：【${resultTextDatabase[finalKey].title}】！💰 身价：${formatPrice(cached.price)}\n\n⚽ 快来测测你的身价：${URL_SHARE_COPY}`;
+  const textToCopy = `🔥 我在【Dealmoon CA】测出了FFTI（世界杯发疯TI ）是：【${resultTextDatabase[finalKey].title}】！💰 身价：${formatPrice(cached.price)}\n\n⚽ 快来测测你的身价：${URL_SHARE_COPY}`;
   
   executeCopyText(textToCopy).then((isSuccess) => {
     const node = targetType === 'core' ? document.getElementById("core-card-node") : document.getElementById("full-poster-wrapper");
